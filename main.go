@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"factorioInstaller/models"
+	"github.com/heschlie/factorioInstaller/models"
 
 	"github.com/mholt/archiver"
 	"encoding/json"
@@ -53,14 +53,16 @@ func main() {
 	}
 
 	// Download latest Factorio headless server into /opt/factorio.
+	fmt.Println("Downloading server...")
 	os.MkdirAll(FACTORIO_DIR, 0755)
 	err := downloadFile(FACTORIO_DIR+"/factorio-headless.tar.gz", FACTORIO_URL)
 	if err != nil {
 		fmt.Errorf("failed to download server archive: %v", err)
 	}
 
+	fmt.Println("Unpacking server...")
 	// Unpack the tar.gz into /opt/factorio.
-	err = archiver.TarGz.Open(FACTORIO_DIR+"/factorio-headless.tar.gz", FACTORIO_DIR)
+	err = archiver.TarGz.Open(FACTORIO_DIR+"/factorio-headless.tar.gz", FACTORIO_DIR+"/")
 	if err != nil {
 		fmt.Errorf("failed to extract archive: %v", err)
 	}
@@ -70,6 +72,7 @@ func main() {
 		fmt.Errorf("there was an error marshaling the config to json: %v", err)
 	}
 
+	fmt.Println("Wrote config file...")
 	err = ioutil.WriteFile(FACTORIO_DIR+"/config", b, 0644)
 	if err != nil {
 		fmt.Errorf("failed to save config: %v", err)
@@ -78,17 +81,20 @@ func main() {
 	os.MkdirAll(FACTORIO_DIR+"/saves", 0755)
 	os.MkdirAll(FACTORIO_DIR+"/mods", 0755)
 
+	fmt.Printf("Downloading save from %s...\n", *saveFileUrl)
 	err = downloadFile(FACTORIO_DIR+"/saves/save.zip", *saveFileUrl)
 	if err != nil {
 		fmt.Errorf("failed to download save file: %v", err)
 	}
 
+	fmt.Printf("Downloading mod zip from %s...\n", *modsZipUrl)
 	err = downloadFile(FACTORIO_DIR+"/mods/mods.zip", *modsZipUrl)
 	if err != nil {
 		fmt.Errorf("failed to download mods zip: %v", err)
 	}
 
-	err = archiver.Zip.Open(FACTORIO_DIR+"/mods/mods.zip", FACTORIO_DIR+"/mods")
+	fmt.Println("Unpacking mods into /mods")
+	err = archiver.Zip.Open(FACTORIO_DIR+"/mods/mods.zip", FACTORIO_DIR+"/mods/")
 	if err != nil {
 		fmt.Errorf("failed to extract mods: %v", err)
 	}
