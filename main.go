@@ -12,7 +12,6 @@ import (
 	"github.com/cavaliercoder/grab"
 	"github.com/mholt/archiver"
 	"log"
-	"os/exec"
 )
 
 const FACTORIO_URL = "https://www.factorio.com/get-download/stable/headless/linux64"
@@ -63,7 +62,7 @@ func main() {
 
 	fmt.Println("Unpacking server...")
 	// Unpack the tar.xz into /opt/factorio.
-	err = archiver.TarXZ.Open(FACTORIO_DIR+resp.Filename, "/opt/")
+	err = archiver.TarXZ.Open(resp.Filename, "/opt/")
 	if err != nil {
 		log.Fatal(fmt.Errorf("fialed to unpack %s: %v", resp.Filename, err))
 	}
@@ -95,7 +94,7 @@ func main() {
 	}
 
 	fmt.Println("Unpacking mods into /mods")
-	err = archiver.Zip.Open(FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
+	err = archiver.Zip.Open(resp.Filename, FACTORIO_DIR+"mods/")
 	if err != nil {
 		fmt.Errorf("failed to unpack %s: %v", resp.Filename, err)
 	}
