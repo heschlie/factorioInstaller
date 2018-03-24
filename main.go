@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"github.com/cavaliercoder/grab"
+	"github.com/mholt/archiver"
+	"log"
 	"os/exec"
 )
 
@@ -56,26 +58,25 @@ func main() {
 	os.MkdirAll(FACTORIO_DIR, 0755)
 	resp, err := grab.Get(FACTORIO_DIR, FACTORIO_URL)
 	if err != nil {
-		fmt.Errorf("failed to download server archive: %v", err)
+		log.Fatal(fmt.Errorf("failed to download server archive: %v", err))
 	}
 
 	fmt.Println("Unpacking server...")
-	// Unpack the tar.gz into /opt/factorio.
-	cmd := exec.Command("tar", "-C", "/opt", FACTORIO_DIR+resp.Filename)
-	err = cmd.Run()
+	// Unpack the tar.xz into /opt/factorio.
+	err = archiver.TarXZ.Open(FACTORIO_DIR+resp.Filename, "/opt/")
 	if err != nil {
-		fmt.Errorf("fialed to unpack %s: %v", resp.Filename, err)
+		log.Fatal(fmt.Errorf("fialed to unpack %s: %v", resp.Filename, err))
 	}
 
 	b, err := json.Marshal(config)
 	if err != nil {
-		fmt.Errorf("there was an error marshaling the config to json: %v", err)
+		log.Fatal(fmt.Errorf("there was an error marshaling the config to json: %v", err))
 	}
 
 	fmt.Println("Wrote config file...")
 	err = ioutil.WriteFile(FACTORIO_DIR+"config.json", b, 0644)
 	if err != nil {
-		fmt.Errorf("failed to save config: %v", err)
+		log.Fatal(fmt.Errorf("failed to save config: %v", err))
 	}
 
 	os.MkdirAll(FACTORIO_DIR+"saves", 0755)
@@ -84,18 +85,17 @@ func main() {
 	fmt.Printf("Downloading save from %s...\n", *saveFileUrl)
 	_, err = grab.Get(FACTORIO_DIR+"saves/", *saveFileUrl)
 	if err != nil {
-		fmt.Errorf("failed to download save file: %v", err)
+		log.Fatal(fmt.Errorf("failed to download save file: %v", err))
 	}
 
 	fmt.Printf("Downloading mod zip from %s...\n", *modsZipUrl)
 	resp, err = grab.Get(FACTORIO_DIR+"mods/", *modsZipUrl)
 	if err != nil {
-		fmt.Errorf("failed to download mods zip: %v", err)
+		log.Fatal(fmt.Errorf("failed to download mods zip: %v", err))
 	}
 
 	fmt.Println("Unpacking mods into /mods")
-	cmd = exec.Command("unzip", FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
-	err = cmd.Run()
+	err = archiver.Zip.Open(FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
 	if err != nil {
 		fmt.Errorf("failed to unpack %s: %v", resp.Filename, err)
 	}
