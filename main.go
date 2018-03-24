@@ -1,16 +1,16 @@
 package main
 
 import (
-	"os"
-	"net/http"
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
+	"os"
 
 	"github.com/heschlie/factorioInstaller/models"
 
-	"github.com/mholt/archiver"
 	"encoding/json"
+	"github.com/mholt/archiver"
 	"io/ioutil"
 )
 
@@ -28,41 +28,41 @@ func main() {
 
 	// Create our settings file.
 	config := models.ServerSettings{
-		Name: *serverName,
+		Name:        *serverName,
 		Description: *description,
-		Tags: []string{},
-		MaxPlayers: 0,
+		Tags:        []string{},
+		MaxPlayers:  0,
 		Visibility: models.ServerVisibility{
 			Public: true,
-			Lan: true,
+			Lan:    true,
 		},
-		Token: *token,
-		GamePassword: *password,
-		RequireUserVerification: false,
-		MaxUpload: 0,
-		MinimumLatency: 0,
+		Token:                                *token,
+		GamePassword:                         *password,
+		RequireUserVerification:              false,
+		MaxUpload:                            0,
+		MinimumLatency:                       0,
 		IgnorePlayerLimitForReturningPlayers: true,
-		AllowCommands: "admins-only",
-		AutosaveInterval: 10,
-		AutosaveSlots: 5,
-		AfkAutokickInterval: 0,
-		AutoPause: true,
-		OnlyAdminsCanPauseTheGame: true,
-		AutosaveOnlyOnServer: true,
-		Admins: []string{ "heschlie" },
+		AllowCommands:                        "admins-only",
+		AutosaveInterval:                     10,
+		AutosaveSlots:                        5,
+		AfkAutokickInterval:                  0,
+		AutoPause:                            true,
+		OnlyAdminsCanPauseTheGame:            true,
+		AutosaveOnlyOnServer:                 true,
+		Admins:                               []string{"heschlie"},
 	}
 
 	// Download latest Factorio headless server into /opt/factorio.
 	fmt.Println("Downloading server...")
 	os.MkdirAll(FACTORIO_DIR, 0755)
-	err := downloadFile(FACTORIO_DIR+"/factorio-headless.tar.gz", FACTORIO_URL)
+	err := downloadFile(FACTORIO_DIR+"/factorio-headless.tar.xz", FACTORIO_URL)
 	if err != nil {
 		fmt.Errorf("failed to download server archive: %v", err)
 	}
 
 	fmt.Println("Unpacking server...")
 	// Unpack the tar.gz into /opt/factorio.
-	err = archiver.TarGz.Open(FACTORIO_DIR+"/factorio-headless.tar.gz", FACTORIO_DIR+"/")
+	err = archiver.TarXZ.Open(FACTORIO_DIR+"/factorio-headless.tar.xz", FACTORIO_DIR+"/")
 	if err != nil {
 		fmt.Errorf("failed to extract archive: %v", err)
 	}
@@ -99,7 +99,7 @@ func main() {
 		fmt.Errorf("failed to extract mods: %v", err)
 	}
 
-	os.Remove(FACTORIO_DIR+"/mods/mods.zip")
+	os.Remove(FACTORIO_DIR + "/mods/mods.zip")
 
 	fmt.Println("Server ready to be launched! use the following command to launch:\n\n" +
 		"/opt/factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings /opt/factorio/config")
@@ -109,7 +109,7 @@ func main() {
 func downloadFile(filepath string, url string) (err error) {
 	// Create the file
 	out, err := os.Create(filepath)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 	defer out.Close()
@@ -128,7 +128,7 @@ func downloadFile(filepath string, url string) (err error) {
 
 	// Writer the body to file
 	_, err = io.Copy(out, resp.Body)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 
