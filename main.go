@@ -8,9 +8,9 @@ import (
 	"github.com/heschlie/factorioInstaller/models"
 
 	"encoding/json"
-	"github.com/mholt/archiver"
 	"io/ioutil"
 	"github.com/cavaliercoder/grab"
+	"os/exec"
 )
 
 const FACTORIO_URL = "https://www.factorio.com/get-download/stable/headless/linux64"
@@ -61,9 +61,10 @@ func main() {
 
 	fmt.Println("Unpacking server...")
 	// Unpack the tar.gz into /opt/factorio.
-	err = archiver.TarXZ.Open(FACTORIO_DIR+resp.Filename, "/opt")
+	cmd := exec.Command("tar", "-C", "/opt", FACTORIO_DIR+resp.Filename)
+	err = cmd.Run()
 	if err != nil {
-		fmt.Errorf("failed to extract archive: %v", err)
+		fmt.Errorf("fialed to unpack %s: %v", resp.Filename, err)
 	}
 
 	b, err := json.Marshal(config)
@@ -93,13 +94,14 @@ func main() {
 	}
 
 	fmt.Println("Unpacking mods into /mods")
-	err = archiver.Zip.Open(FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
+	cmd = exec.Command("unzip", FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
+	err = cmd.Run()
 	if err != nil {
-		fmt.Errorf("failed to extract mods: %v", err)
+		fmt.Errorf("failed to unpack %s: %v", resp.Filename, err)
 	}
 
 	os.Remove(FACTORIO_DIR + "mods/mods.zip")
 
 	fmt.Println("Server ready to be launched! use the following command to launch:\n\n" +
-		"/opt/factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings /opt/factorio/config")
+		"/opt/factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings /opt/factorio/config.json")
 }
