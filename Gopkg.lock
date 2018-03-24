@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/cavaliercoder/grab"
+  packages = ["."]
+  revision = "3b6830dae49bc01e25b4676dae3a2a06c1b1485e"
+  version = "v2.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/dsnet/compress"
   packages = [
@@ -16,10 +22,7 @@
 
 [[projects]]
   name = "github.com/mholt/archiver"
-  packages = [
-    ".",
-    "cmd/archiver"
-  ]
+  packages = ["."]
   revision = "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006"
   version = "v2.0"
 
@@ -43,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0cce9f72259fddc3e0dc81f40948884dd7348d22397bf95c8f94158ce94904d0"
+  inputs-digest = "2bac4c9a4bad852e11f06cf66e08edea0465a97ef8803a78ed85137257e89a38"
   solver-name = "gps-cdcl"
   solver-version = 1

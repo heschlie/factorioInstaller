@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
 	"github.com/heschlie/factorioInstaller/models"
@@ -12,10 +10,11 @@ import (
 	"encoding/json"
 	"github.com/mholt/archiver"
 	"io/ioutil"
+	"github.com/cavaliercoder/grab"
 )
 
 const FACTORIO_URL = "https://www.factorio.com/get-download/stable/headless/linux64"
-const FACTORIO_DIR = "/opt/factorio"
+const FACTORIO_DIR = "/opt/factorio/"
 
 func main() {
 	token := flag.String("token", "", "Factorio account token")
@@ -55,14 +54,14 @@ func main() {
 	// Download latest Factorio headless server into /opt/factorio.
 	fmt.Println("Downloading server...")
 	os.MkdirAll(FACTORIO_DIR, 0755)
-	err := downloadFile(FACTORIO_DIR+"/factorio-headless.tar.xz", FACTORIO_URL)
+	resp, err := grab.Get(FACTORIO_DIR, FACTORIO_URL)
 	if err != nil {
 		fmt.Errorf("failed to download server archive: %v", err)
 	}
 
 	fmt.Println("Unpacking server...")
 	// Unpack the tar.gz into /opt/factorio.
-	err = archiver.TarXZ.Open(FACTORIO_DIR+"/factorio-headless.tar.xz", FACTORIO_DIR+"/")
+	err = archiver.TarXZ.Open(FACTORIO_DIR+resp.Filename, "/opt")
 	if err != nil {
 		fmt.Errorf("failed to extract archive: %v", err)
 	}
@@ -73,64 +72,34 @@ func main() {
 	}
 
 	fmt.Println("Wrote config file...")
-	err = ioutil.WriteFile(FACTORIO_DIR+"/config", b, 0644)
+	err = ioutil.WriteFile(FACTORIO_DIR+"config.json", b, 0644)
 	if err != nil {
 		fmt.Errorf("failed to save config: %v", err)
 	}
 
-	os.MkdirAll(FACTORIO_DIR+"/saves", 0755)
-	os.MkdirAll(FACTORIO_DIR+"/mods", 0755)
+	os.MkdirAll(FACTORIO_DIR+"saves", 0755)
+	os.MkdirAll(FACTORIO_DIR+"mods", 0755)
 
 	fmt.Printf("Downloading save from %s...\n", *saveFileUrl)
-	err = downloadFile(FACTORIO_DIR+"/saves/save.zip", *saveFileUrl)
+	_, err = grab.Get(FACTORIO_DIR+"saves/", *saveFileUrl)
 	if err != nil {
 		fmt.Errorf("failed to download save file: %v", err)
 	}
 
 	fmt.Printf("Downloading mod zip from %s...\n", *modsZipUrl)
-	err = downloadFile(FACTORIO_DIR+"/mods/mods.zip", *modsZipUrl)
+	resp, err = grab.Get(FACTORIO_DIR+"mods/", *modsZipUrl)
 	if err != nil {
 		fmt.Errorf("failed to download mods zip: %v", err)
 	}
 
 	fmt.Println("Unpacking mods into /mods")
-	err = archiver.Zip.Open(FACTORIO_DIR+"/mods/mods.zip", FACTORIO_DIR+"/mods/")
+	err = archiver.Zip.Open(FACTORIO_DIR+"mods/"+resp.Filename, FACTORIO_DIR+"mods/")
 	if err != nil {
 		fmt.Errorf("failed to extract mods: %v", err)
 	}
 
-	os.Remove(FACTORIO_DIR + "/mods/mods.zip")
+	os.Remove(FACTORIO_DIR + "mods/mods.zip")
 
 	fmt.Println("Server ready to be launched! use the following command to launch:\n\n" +
 		"/opt/factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings /opt/factorio/config")
-}
-
-// downloadFile Will download a file from the specified URL.
-func downloadFile(filepath string, url string) (err error) {
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Check server response
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	// Writer the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
