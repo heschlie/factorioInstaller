@@ -96,7 +96,7 @@ func main() {
 	fmt.Println("Unpacking mods into /mods")
 	err = archiver.Zip.Open(resp.Filename, FACTORIO_DIR+"mods/")
 	if err != nil {
-		fmt.Errorf("failed to unpack %s: %v", resp.Filename, err)
+		log.Fatal(fmt.Errorf("failed to unpack %s: %v", resp.Filename, err))
 	}
 
 	os.Remove(FACTORIO_DIR + "mods/mods.zip")
