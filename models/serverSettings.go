@@ -6,6 +6,7 @@ type ServerSettings struct {
 	Tags                                 []string         `json:"tags"`
 	MaxPlayers                           int              `json:"max_players"`
 	Visibility                           ServerVisibility `json:"visibility"`
+	Username						     string           `json:"username"`
 	Token                                string           `json:"token"`
 	GamePassword                         string           `json:"game_password"`
 	RequireUserVerification              bool             `json:"require_user_verification"`
@@ -23,6 +24,6 @@ type ServerSettings struct {
 }
 
 type ServerVisibility struct {
-	Public bool
-	Lan    bool
+	Public bool `json:"public"`
+	Lan    bool `json:"lan"`
 }
